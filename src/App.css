@@ -1,3 +1,8 @@
 .App {
   padding: 1em;
 }
+
+.Footer {
+  background-color: pink;
+  text-align: center;
+}

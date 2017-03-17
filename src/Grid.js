@@ -6,22 +6,73 @@ function hsla(hue, saturation, lightness, alpha) {
 
 export default class Grid extends Component {
   static propTypes = {
-    alignItems: PropTypes.oneOf(["start", "center", "end"]),
-    alignContent: PropTypes.oneOf(["start", "center", "end"]),
-    justifyItems: PropTypes.oneOf(["start", "center", "end"]),
-    justifyContent: PropTypes.oneOf(["start", "center", "end"]),
+    /**
+     * Alignment each item along the column axis. For an auto-flow value of row
+     * (default) for example, changing this allows you to specify whether each
+     * item in that row (for all rows) is flush with the top of the gridline
+     * ("start"), the bottom ("end"), centered between the two horizontal grid
+     * lines vertically ("center"), or takes up the full height of the grid
+     * area (this happens by default).
+     */
+    alignItems: PropTypes.oneOf([
+      "start",
+      "center",
+      "end",
+      "stretch", // default
+    ]),
+
+    alignContent: PropTypes.oneOf([
+      "start",
+      "center",
+      "end",
+      "space-between",
+      "space-around",
+      "space-evenly",
+    ]),
+
+    autoFlow: PropTypes.oneOf([
+      "row",
+      "column",
+      "row dense",
+      "column dense",
+    ]),
+
+    justifyItems: PropTypes.oneOf([
+      "start",
+      "center",
+      "end",
+      "stretch",
+    ]),
+
+    justifyContent: PropTypes.oneOf([
+      "start",
+      "center",
+      "end",
+      "space-between",
+      "space-around",
+      "space-evenly",
+    ]),
+
+    writingMode: PropTypes.oneOf([
+      "horizontal-tb",
+      "horizontal-bt",
+      "vertical-rl",
+      "vertical-lr",
+    ]),
   }
 
   render () {
     const {
       alignContent,
       alignItems,
+      autoFlow,
       columns,
       gap,
       justifyContent,
       justifyItems,
       templateColumns,
       templateRows,
+      writingMode,
     } = this.props
 
     const style = { display: "grid" }
@@ -30,22 +81,15 @@ export default class Grid extends Component {
       style.gridTemplateColumns = `repeat(${parseInt(columns, 10)}, 1fr)`
     }
 
-    if (templateColumns) {
-      style.gridTemplateColumns = templateColumns
-    }
-
-    if (templateRows) {
-      style.gridTemplateRows = templateRows
-    }
-
-    if (gap) {
-      style.gridGap = gap
-    }
-
-    if (alignItems)     style.alignItems     = alignItems
-    if (alignContent)   style.alignContent   = alignContent
-    if (justifyItems)   style.justifyItems   = justifyItems
-    if (justifyContent) style.justifyContent = justifyContent
+    if (autoFlow)        style.gridAutoFlow        = autoFlow
+    if (templateColumns) style.gridTemplateColumns = templateColumns
+    if (templateRows)    style.gridTemplateRows    = templateRows
+    if (gap)             style.gridGap             = gap
+    if (alignItems)      style.alignItems          = alignItems
+    if (alignContent)    style.alignContent        = alignContent
+    if (justifyItems)    style.justifyItems        = justifyItems
+    if (justifyContent)  style.justifyContent      = justifyContent
+    if (writingMode)     style.writingMode         = writingMode
 
     return React.createElement("div", {
       style: this.props.style ? Object.assign(style, this.props.style) : style
@@ -55,25 +99,20 @@ export default class Grid extends Component {
 
 class GridItem extends Component {
   render () {
-    console.log(this.props)
     const {
+      area,
       column,
       columnStart,
       columnEnd,
-      children,
+      children: child,
       row,
       rowStart,
       rowEnd,
     } = this.props
 
-    const style = {
-      backgroundColor: hsla(50, 0.3, 0.3, 0.7),
-      color: "white",
-      fontWeight: "bold",
-      padding: "1.618em",
-      borderRadius: "3px",
-    }
+    let style = {}
 
+    if (area)        style.gridArea        = area
     if (column)      style.gridColumn      = column
     if (columnStart) style.gridColumnStart = columnStart
     if (columnEnd)   style.gridColumnEnd   = columnEnd
@@ -81,7 +120,25 @@ class GridItem extends Component {
     if (rowStart)    style.gridRowStart    = rowStart
     if (rowEnd)      style.gridRowEnd      = rowEnd
 
-    return React.createElement("div", { style }, children)
+    if (this.props.style) {
+      style = Object.assign(style, this.props.style)
+    }
+
+    if (React.isValidElement(child)) {
+      if (child.props.style) {
+        style = Object.assign(style, child.props.style)
+      }
+      return React.cloneElement(child, { style })
+    } else {
+      style = Object.assign(style, {
+        backgroundColor: hsla(50, 0.3, 0.3, 0.7),
+        color: "white",
+        fontWeight: "bold",
+        padding: "1.618em",
+        borderRadius: "3px",
+      })
+      return React.createElement("div", { style }, child)
+    }
   }
 }
 
